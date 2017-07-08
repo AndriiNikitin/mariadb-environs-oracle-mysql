@@ -35,5 +35,5 @@ if [ -f "$(basename $file)" ] ; then
     tar -zxf "$(basename $file)" ${ERN_M_TAR_EXTRA_FLAGS} --strip 1
   fi
 fi
-
+)
 :
