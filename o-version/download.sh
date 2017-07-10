@@ -5,9 +5,35 @@
 ver=__version
 major=${ver%\.*}
 
-FILE=https://dev.mysql.com/get/Downloads/MySQL-${major}/mysql-${ver}-linux-glibc2.5-x86_64.tar.gz
+file=https://dev.mysql.com/get/Downloads/MySQL-${major}/mysql-${ver}-linux-glibc2.5-x86_64.tar.gz
 
 mkdir -p __workdir/../_depot/o-tar/__version
 
-( cd __workdir/../_depot/o-tar/__version && \
-[[ -f $(basename $FILE) ]] || wget -nc $FILE && tar -zxf $(basename $FILE) --strip 1 )
+( 
+cd __workdir/../_depot/o-tar/__version
+
+function cleanup {
+  [ -z "$wgetpid" ] || kill "$wgetpid" 2>/dev/null
+}
+
+trap cleanup INT TERM
+
+if [ ! -f "$(basename $file)"  ] ; then 
+  echo downloading "$file"
+  wget -q -np -nc $file &
+  wgetpid=$!
+  while kill -0 $wgetpid 2>/dev/null ; do
+    sleep 10
+    echo -n .
+  done
+  wait $wgetpid
+  wgetpid=""
+fi
+
+if [ -f "$(basename $file)" ] ; then 
+  if [ ! -x bin/mysqld ] ; then
+    tar -zxf "$(basename $file)" ${ERN_M_TAR_EXTRA_FLAGS} --strip 1
+  fi
+fi
+)
+:
